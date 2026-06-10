@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI-QTIL — Жасанды Интеллект</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:opsz,wght@9..40,200;9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
+
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:           #F4F8FC;
+  --bg2:          #EBF2F9;
+  --surface:      #FFFFFF;
+  --surface2:     #EDF3FA;
+
+  --blue:         #4A7CC7;
+  --blue-mid:     #5E8FD6;
+  --blue-light:   #7AAAE0;
+  --blue-pale:    #C2D7EE;
+  --blue-xpale:   #E8F1F9;
+  --blue-glow:    rgba(74,124,199,0.14);
+
+  --text:         #1A2840;
+  --text-mid:     #2E4262;
+  --text-dim:     #637899;
+  --muted:        #96AFCA;
+  --border:       rgba(74,124,199,0.13);
+  --border2:      rgba(74,124,199,0.24);
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-weight: 300;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  overflow: hidden;
+}
+
+/* ── BACKGROUND ── */
+body::before {
+  content: '';
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background:
+    radial-gradient(ellipse 60% 45% at 8%  0%,   rgba(74,124,199,0.09) 0%, transparent 60%),
+    radial-gradient(ellipse 55% 40% at 92% 100%,  rgba(94,143,214,0.07) 0%, transparent 60%),
+    radial-gradient(ellipse 80% 60% at 50% 50%,   rgba(194,215,238,0.18) 0%, transparent 80%);
+}
+
+/* ── RIGHT SIDE PANEL: blue strip with ornament ── */
+.side-panel {
+  position: fixed; top: 0; right: 0;
+  width: clamp(56px, 7vw, 88px);
+  height: 100vh;
+  z-index: 0; pointer-events: none;
+  background: linear-gradient(180deg,
+    #BACED9 0%, #8AAFD6 30%, #6A9FCC 60%, #8AAFD6 80%, #BACED9 100%
+  );
+  opacity: 0.32;
+  display: flex; align-items: center; justify-content: center;
+}
+.side-panel svg { width: 68%; opacity: 0.77; }
+
+/* ── LEFT ACCENT STRIPE ── */
+.stripe-left {
+  position: fixed; top: 0; left: 0;
+  width: 3px; height: 100vh;
+  z-index: 2; pointer-events: none;
+  background: linear-gradient(180deg,
+    transparent 0%,
+    var(--blue-pale) 20%,
+    var(--blue) 50%,
+    var(--blue-pale) 80%,
+    transparent 100%
+  );
+  opacity: 0.55;
+}
+
+/* ── WATERMARK ORNAMENT ── */
+.ornament-watermark {
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0.1;
+}
+.ornament-watermark svg { width: min(70vw, 510px); height: auto; }
+
+/* ── LAYOUT ── */
+.layout {
+  position: relative; z-index: 1;
+  width: 100%; max-width: 730px;
+  display: flex; flex-direction: column;
+  height: 100vh;
+  padding: 0 22px;
+}
+
+/* ── HEADER ── */
+header {
+  padding: 20px 0 15px;
+  display: flex; align-items: center; gap: 15px;
+  flex-shrink: 0; position: relative;
+}
+header::after {
+  content: '';
+  position: absolute; bottom: 0; left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg,
+    transparent,
+    var(--blue-pale) 20%,
+    var(--blue-light) 50%,
+    var(--blue-pale) 80%,
+    transparent
+  );
+}
+
+.logo-wrap {
+  position: relative; width: 46px; height: 46px; flex-shrink: 0;
+}
+.logo-wrap::before {
+  content: '';
+  position: absolute; inset: -2px; border-radius: 50%;
+  background: conic-gradient(from 0deg,
+    transparent 55%, var(--blue-light) 72%, transparent 100%
+  );
+  opacity: 0.55;
+  animation: spin 10s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.logo {
+  width: 46px; height: 46px; position: relative; z-index: 1;
+  background: var(--surface);
+  border-radius: 50%;
+  border: 1.5px solid var(--blue-pale);
+  box-shadow: 0 2px 14px var(--blue-glow);
+  display: flex; align-items: center; justify-content: center;
+}
+.logo svg { width: 28px; height: 28px; }
+
+.header-text { flex: 1; }
+.header-text h1 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 22px; font-weight: 600; font-style: italic;
+  color: var(--blue); letter-spacing: 0.3px; line-height: 1.1;
+}
+.header-text p {
+  font-size: 10px; color: var(--muted);
+  letter-spacing: 2.4px; text-transform: uppercase; margin-top: 5px;
+}
+
+.header-badge {
+  display: flex; align-items: center; gap: 7px;
+  background: var(--blue-xpale);
+  border: 1px solid var(--border2);
+  border-radius: 20px;
+  padding: 5px 12px;
+  font-size: 11px; color: var(--text-dim);
+}
+.status-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: #3AB56E;
+  box-shadow: 0 0 7px rgba(58,181,110,0.55);
+  animation: pulse 2.5s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%,100% { opacity:1; }
+  50%      { opacity: 0.5; }
+}
+
+/* ── CHAT ── */
+.chat {
+  flex: 1; overflow-y: auto;
+  padding: 26px 0 12px;
+  display: flex; flex-direction: column; gap: 22px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--blue-pale) transparent;
+}
+.chat::-webkit-scrollbar { width: 3px; }
+.chat::-webkit-scrollbar-thumb { background: var(--blue-pale); border-radius: 3px; }
+.chat::-webkit-scrollbar-track { background: transparent; }
+
+/* ── WELCOME ── */
+.welcome {
+  margin: auto 0;
+  padding: 40px 16px;
+  text-align: center;
+  animation: fadeUp 0.65s ease;
+}
+@keyframes fadeUp {
+  from { opacity:0; transform:translateY(14px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+
+.welcome-emblem {
+  width: 90px; height: 90px;
+  margin: 0 auto 26px;
+  position: relative;
+}
+.w-ring {
+  position: absolute; inset: 0; border-radius: 50%;
+  border: 1px solid var(--blue-light);
+  opacity: 0.28; animation: rings 4s ease-in-out infinite;
+}
+.w-ring:nth-child(2) { inset:-10px; animation-delay:.7s; opacity:.14; }
+.w-ring:nth-child(3) { inset:-20px; animation-delay:1.4s; opacity:.07; }
+@keyframes rings {
+  0%,100% { transform:scale(1); }
+  50%      { transform:scale(1.04); }
+}
+.w-inner {
+  position: absolute; inset: 0; border-radius: 50%;
+  background: linear-gradient(135deg, #EBF3FB, #D4E7F5);
+  border: 1.5px solid var(--blue-pale);
+  box-shadow: 0 4px 22px var(--blue-glow);
+  display: flex; align-items: center; justify-content: center;
+}
+.w-inner svg { width: 44px; height: 44px; }
+
+.welcome h2 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 34px; font-weight: 300; font-style: italic;
+  color: var(--blue); margin-bottom: 10px; line-height: 1.2;
+}
+.welcome h2 span { font-weight: 600; }
+.welcome-sub {
+  font-size: 13.5px; color: var(--text-dim); line-height: 1.9;
+  max-width: 370px; margin: 0 auto 22px;
+}
+.welcome-sep {
+  display: flex; align-items: center; gap: 14px;
+  margin: 0 auto; max-width: 300px;
+}
+.welcome-sep::before,
+.welcome-sep::after {
+  content:''; flex:1; height:1px; background: var(--border);
+}
+.welcome-sep span { font-size:10px; letter-spacing:2px; color:var(--muted); text-transform:uppercase; white-space:nowrap; }
+
+/* ── MESSAGES ── */
+.msg {
+  display: flex; gap: 12px;
+  animation: msgIn .27s cubic-bezier(.34,1.45,.64,1);
+}
+@keyframes msgIn {
+  from { opacity:0; transform:translateY(7px) scale(.98); }
+  to   { opacity:1; transform:translateY(0) scale(1); }
+}
+.msg.user { flex-direction: row-reverse; }
+
+.avatar {
+  width: 30px; height: 30px; flex-shrink: 0;
+  margin-top: 3px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+}
+.avatar.ai {
+  background: linear-gradient(135deg, #EBF3FB, #D5E8F7);
+  border: 1.5px solid var(--blue-pale);
+  box-shadow: 0 2px 10px var(--blue-glow);
+}
+.avatar.user {
+  background: var(--blue-xpale);
+  border: 1px solid var(--border);
+}
+
+.bubble { max-width: 80%; font-size: 14.5px; line-height: 1.87; word-break: break-word; }
+
+/* AI bubble */
+.bubble.ai { color: var(--text); padding-top: 2px; }
+
+/* User bubble */
+.bubble.user {
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: 4px 16px 16px 16px;
+  padding: 11px 16px;
+  color: var(--text-mid);
+  box-shadow:
+    0 2px 12px rgba(74,124,199,0.07),
+    0 1px 3px rgba(74,124,199,0.04);
+}
+
+/* AI typography */
+.bubble.ai strong { font-weight: 500; color: var(--blue); }
+.bubble.ai em     { font-style: italic; color: var(--text-dim); }
+.bubble.ai code {
+  font-family: 'SF Mono','Fira Code',monospace;
+  background: var(--blue-xpale); border: 1px solid var(--border);
+  padding: 1px 7px; border-radius: 4px; font-size: 12.5px; color: var(--blue);
+}
+.bubble.ai pre {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: 8px; padding: 14px 16px; margin: 10px 0; overflow-x: auto;
+}
+.bubble.ai pre code { background:none; border:none; padding:0; color:var(--text); }
+.bubble.ai ul, .bubble.ai ol { padding-left: 20px; margin: 6px 0; }
+.bubble.ai li { margin: 5px 0; color: var(--text-mid); }
+.bubble.ai li::marker { color: var(--blue-light); }
+.bubble.ai h1, .bubble.ai h2, .bubble.ai h3 {
+  font-family: 'Cormorant Garamond', serif; font-weight: 600;
+  color: var(--blue); margin: 16px 0 6px; line-height: 1.3;
+}
+.bubble.ai h1 { font-size: 22px; font-style: italic; }
+.bubble.ai h2 { font-size: 18px; }
+.bubble.ai h3 { font-size: 15.5px; font-style: italic; }
+.bubble.ai p  { margin: 5px 0; }
+.bubble.ai hr { border: none; border-top: 1px solid var(--border); margin: 12px 0; }
+.bubble.ai blockquote {
+  border-left: 2.5px solid var(--blue-pale);
+  margin: 10px 0; padding: 6px 14px;
+  color: var(--text-dim); font-style: italic;
+  background: var(--blue-xpale); border-radius: 0 6px 6px 0;
+}
+
+/* ── TYPING ── */
+.typing-wrap { display:flex; align-items:center; gap:10px; padding:4px 0; }
+.typing-label { font-size:11px; color:var(--muted); font-style:italic; }
+.typing { display:flex; gap:4px; align-items:center; }
+.typing span {
+  width:5px; height:5px; border-radius:50%;
+  background: var(--blue-pale);
+  animation: bounce 1.5s ease-in-out infinite;
+}
+.typing span:nth-child(1) { animation-delay:0s; }
+.typing span:nth-child(2) { animation-delay:.2s; }
+.typing span:nth-child(3) { animation-delay:.4s; }
+@keyframes bounce {
+  0%,60%,100% { transform:translateY(0); opacity:.35; background:var(--blue-pale); }
+  30%          { transform:translateY(-5px); opacity:1; background:var(--blue-mid); }
+}
+
+/* ── CHIPS ── */
+.chips {
+  display:flex; flex-wrap:wrap; gap:7px;
+  padding:4px 0 14px; flex-shrink:0;
+}
+.chip {
+  padding: 7px 15px;
+  border: 1px solid var(--border2);
+  border-radius: 24px;
+  font-size: 12px; font-family: inherit; font-weight: 400;
+  color: var(--blue); background: var(--blue-xpale);
+  cursor: pointer; transition: all .2s ease;
+}
+.chip:hover {
+  background: var(--blue); color: white;
+  border-color: var(--blue);
+  box-shadow: 0 3px 14px var(--blue-glow);
+  transform: translateY(-1px);
+}
+.chip:active { transform: translateY(0); box-shadow: none; }
+
+/* ── INPUT ZONE ── */
+.input-zone {
+  padding: 14px 0 20px; flex-shrink: 0; position: relative;
+}
+.input-zone::before {
+  content:'';
+  position: absolute; top:0; left:0; right:0; height:1px;
+  background: linear-gradient(90deg,
+    transparent, var(--blue-pale) 30%, var(--blue-light) 50%, var(--blue-pale) 70%, transparent
+  );
+  opacity: 0.7;
+}
+
+.input-wrap {
+  display: flex; align-items: flex-end; gap: 12px;
+  background: var(--surface);
+  border: 1.5px solid var(--border2);
+  border-radius: 14px; padding: 12px 14px;
+  transition: border-color .25s, box-shadow .25s;
+  box-shadow: 0 2px 14px rgba(74,124,199,0.07);
+}
+.input-wrap:focus-within {
+  border-color: var(--blue-light);
+  box-shadow: 0 0 0 3px rgba(74,124,199,0.09), 0 4px 24px rgba(74,124,199,0.1);
+}
+
+#inp {
+  flex:1; background:transparent; border:none; outline:none;
+  color: var(--text); font-family: 'DM Sans', inherit;
+  font-size: 14px; font-weight: 300; line-height: 1.6;
+  resize:none; min-height:22px; max-height:120px;
+  caret-color: var(--blue);
+}
+#inp::placeholder { color: var(--muted); }
+
+#send {
+  width: 36px; height: 36px; border-radius: 10px;
+  background: var(--blue); border: none;
+  cursor: pointer; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  transition: all .2s ease;
+  box-shadow: 0 3px 12px rgba(74,124,199,0.35);
+}
+#send:hover { background: var(--blue-mid); box-shadow: 0 4px 20px rgba(74,124,199,0.45); transform: scale(1.06); }
+#send:active { transform: scale(.96); }
+#send:disabled { opacity:.35; cursor:not-allowed; transform:none; box-shadow:none; }
+#send svg { width:15px; height:15px; fill:white; }
+
+.hint {
+  font-size:10.5px; color:var(--muted);
+  text-align:center; margin-top:10px; letter-spacing:.3px;
+}
+.hint b { color:var(--blue-light); font-weight:400; }
+
+/* ── SCROLL BTN ── */
+.scroll-btn {
+  position: absolute; bottom:90px; right:8px;
+  width:34px; height:34px; border-radius:50%;
+  background:var(--surface); border:1.5px solid var(--border2);
+  cursor:pointer; display:none;
+  align-items:center; justify-content:center;
+  box-shadow:0 3px 14px rgba(74,124,199,0.12);
+  transition:all .2s; z-index:10;
+}
+.scroll-btn:hover { border-color:var(--blue-light); }
+.scroll-btn svg { width:15px; height:15px; fill:var(--blue); }
+.scroll-btn.visible { display:flex; }
+
+/* ── RESPONSIVE ── */
+@media (max-width:600px) {
+  .layout { padding:0 14px; }
+  .bubble { max-width:90%; font-size:14px; }
+  .welcome h2 { font-size:28px; }
+  .side-panel { display:none; }
+  .header-badge span:not(.status-dot) { display:none; }
+}
+@media (max-width:400px) { .bubble { max-width:95%; } }
+
+::selection { background:rgba(74,124,199,0.18); color:var(--blue); }
+</style>
+</head>
+<body>
+
+<!-- Blue side panel with Kazakh ornament -->
+<div class="side-panel" aria-hidden="true">
+  <svg viewBox="0 0 60 520" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <g stroke="#2C5F9E" stroke-width="0.85">
+      <!-- Repeating unit: central star + ram horn connectors -->
+      <!-- Unit 1 -->
+      <circle cx="30" cy="38" r="11"/>
+      <circle cx="30" cy="38" r="4.5"/>
+      <circle cx="30" cy="38" r="1.8" fill="#2C5F9E"/>
+      <line x1="30" y1="27" x2="30" y2="49"/>
+      <line x1="19" y1="38" x2="41" y2="38"/>
+      <line x1="22" y1="30" x2="38" y2="46"/>
+      <line x1="38" y1="30" x2="22" y2="46"/>
+      <!-- connector line -->
+      <line x1="30" y1="49" x2="30" y2="62"/>
+      <!-- left horn -->
+      <path d="M22,64 Q13,67 13,76 Q13,85 22,87 Q29,88 31,81 Q33,74 26,73 Q21,72 21,77 Q21,82 26,83"/>
+      <!-- right horn -->
+      <path d="M38,64 Q47,67 47,76 Q47,85 38,87 Q31,88 29,81 Q27,74 34,73 Q39,72 39,77 Q39,82 34,83"/>
+      <line x1="30" y1="89" x2="30" y2="102"/>
+      <line x1="22" y1="97" x2="38" y2="97" stroke-dasharray="2,3"/>
+
+      <!-- Unit 2 -->
+      <circle cx="30" cy="118" r="11"/>
+      <circle cx="30" cy="118" r="4.5"/>
+      <circle cx="30" cy="118" r="1.8" fill="#2C5F9E"/>
+      <line x1="30" y1="107" x2="30" y2="129"/>
+      <line x1="19" y1="118" x2="41" y2="118"/>
+      <line x1="22" y1="110" x2="38" y2="126"/>
+      <line x1="38" y1="110" x2="22" y2="126"/>
+      <line x1="30" y1="129" x2="30" y2="142"/>
+      <path d="M22,144 Q13,147 13,156 Q13,165 22,167 Q29,168 31,161 Q33,154 26,153 Q21,152 21,157 Q21,162 26,163"/>
+      <path d="M38,144 Q47,147 47,156 Q47,165 38,167 Q31,168 29,161 Q27,154 34,153 Q39,152 39,157 Q39,162 34,163"/>
+      <line x1="30" y1="169" x2="30" y2="182"/>
+      <line x1="22" y1="177" x2="38" y2="177" stroke-dasharray="2,3"/>
+
+      <!-- Unit 3 -->
+      <circle cx="30" cy="198" r="11"/>
+      <circle cx="30" cy="198" r="4.5"/>
+      <circle cx="30" cy="198" r="1.8" fill="#2C5F9E"/>
+      <line x1="30" y1="187" x2="30" y2="209"/>
+      <line x1="19" y1="198" x2="41" y2="198"/>
+      <line x1="22" y1="190" x2="38" y2="206"/>
+      <line x1="38" y1="190" x2="22" y2="206"/>
+      <line x1="30" y1="209" x2="30" y2="222"/>
+      <path d="M22,224 Q13,227 13,236 Q13,245 22,247 Q29,248 31,241 Q33,234 26,233 Q21,232 21,237 Q21,242 26,243"/>
+      <path d="M38,224 Q47,227 47,236 Q47,245 38,247 Q31,248 29,241 Q27,234 34,233 Q39,232 39,237 Q39,242 34,243"/>
+      <line x1="30" y1="249" x2="30" y2="262"/>
+      <line x1="22" y1="257" x2="38" y2="257" stroke-dasharray="2,3"/>
+
+      <!-- Unit 4 -->
+      <circle cx="30" cy="278" r="11"/>
+      <circle cx="30" cy="278" r="4.5"/>
+      <circle cx="30" cy="278" r="1.8" fill="#2C5F9E"/>
+      <line x1="30" y1="267" x2="30" y2="289"/>
+      <line x1="19" y1="278" x2="41" y2="278"/>
+      <line x1="22" y1="270" x2="38" y2="286"/>
+      <line x1="38" y1="270" x2="22" y2="286"/>
+      <line x1="30" y1="289" x2="30" y2="302"/>
+      <path d="M22,304 Q13,307 13,316 Q13,325 22,327 Q29,328 31,321 Q33,314 26,313 Q21,312 21,317 Q21,322 26,323"/>
+      <path d="M38,304 Q47,307 47,316 Q47,325 38,327 Q31,328 29,321 Q27,314 34,313 Q39,312 39,317 Q39,322 34,323"/>
+      <line x1="30" y1="329" x2="30" y2="342"/>
+      <line x1="22" y1="337" x2="38" y2="337" stroke-dasharray="2,3"/>
+
+      <!-- Unit 5 -->
+      <circle cx="30" cy="358" r="11"/>
+      <circle cx="30" cy="358" r="4.5"/>
+      <circle cx="30" cy="358" r="1.8" fill="#2C5F9E"/>
+      <line x1="30" y1="347" x2="30" y2="369"/>
+      <line x1="19" y1="358" x2="41" y2="358"/>
+      <line x1="22" y1="350" x2="38" y2="366"/>
+      <line x1="38" y1="350" x2="22" y2="366"/>
+      <line x1="30" y1="369" x2="30" y2="382"/>
+      <path d="M22,384 Q13,387 13,396 Q13,405 22,407 Q29,408 31,401 Q33,394 26,393 Q21,392 21,397 Q21,402 26,403"/>
+      <path d="M38,384 Q47,387 47,396 Q47,405 38,407 Q31,408 29,401 Q27,394 34,393 Q39,392 39,397 Q39,402 34,403"/>
+      <line x1="30" y1="409" x2="30" y2="440"/>
+    </g>
+  </svg>
+</div>
+
+<div class="stripe-left" aria-hidden="true"></div>
+
+<!-- Watermark ornament -->
+<div class="ornament-watermark" aria-hidden="true">
+  <svg viewBox="0 0 420 420" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect x="12" y="12" width="396" height="396" stroke="#4A7CC7" stroke-width="0.7"/>
+    <rect x="20" y="20" width="380" height="380" stroke="#4A7CC7" stroke-width="0.35"/>
+    <!-- Corners: қошқар мүйіз -->
+    <path d="M12,12 Q35,12 39,29 Q43,46 28,50 Q16,53 16,66 Q16,82 31,85 Q46,87 49,73 Q52,59 41,56 Q30,53 33,40 Q35,27 50,22 Q64,18 76,18" stroke="#4A7CC7" stroke-width="0.7" fill="none"/>
+    <path d="M408,12 Q385,12 381,29 Q377,46 392,50 Q404,53 404,66 Q404,82 389,85 Q374,87 371,73 Q368,59 379,56 Q390,53 387,40 Q385,27 370,22 Q356,18 344,18" stroke="#4A7CC7" stroke-width="0.7" fill="none"/>
+    <path d="M12,408 Q35,408 39,391 Q43,374 28,370 Q16,367 16,354 Q16,338 31,335 Q46,333 49,347 Q52,361 41,364 Q30,367 33,380 Q35,393 50,398 Q64,402 76,402" stroke="#4A7CC7" stroke-width="0.7" fill="none"/>
+    <path d="M408,408 Q385,408 381,391 Q377,374 392,370 Q404,367 404,354 Q404,338 389,335 Q374,333 371,347 Q368,361 379,364 Q390,367 387,380 Q385,393 370,398 Q356,402 344,402" stroke="#4A7CC7" stroke-width="0.7" fill="none"/>
+    <!-- Central mandala -->
+    <circle cx="210" cy="210" r="88" stroke="#4A7CC7" stroke-width="0.5"/>
+    <circle cx="210" cy="210" r="60" stroke="#4A7CC7" stroke-width="0.5"/>
+    <circle cx="210" cy="210" r="34" stroke="#4A7CC7" stroke-width="0.5"/>
+    <circle cx="210" cy="210" r="11" stroke="#4A7CC7" stroke-width="0.7"/>
+    <circle cx="210" cy="210" r="3.5" fill="#4A7CC7"/>
+    <line x1="210" y1="122" x2="210" y2="298" stroke="#4A7CC7" stroke-width="0.4"/>
+    <line x1="122" y1="210" x2="298" y2="210" stroke="#4A7CC7" stroke-width="0.4"/>
+    <line x1="148" y1="148" x2="272" y2="272" stroke="#4A7CC7" stroke-width="0.4"/>
+    <line x1="272" y1="148" x2="148" y2="272" stroke="#4A7CC7" stroke-width="0.4"/>
+    <polygon points="210,180 228,198 210,216 192,198" stroke="#4A7CC7" stroke-width="0.4" fill="none"/>
+    <polygon points="210,204 228,222 210,240 192,222" stroke="#4A7CC7" stroke-width="0.4" fill="none"/>
+    <polygon points="180,210 198,192 216,210 198,228" stroke="#4A7CC7" stroke-width="0.4" fill="none"/>
+    <polygon points="204,210 222,192 240,210 222,228" stroke="#4A7CC7" stroke-width="0.4" fill="none"/>
+    <g stroke="#4A7CC7" stroke-width="0.5">
+      <line x1="210" y1="12" x2="210" y2="24"/>
+      <line x1="210" y1="396" x2="210" y2="408"/>
+      <line x1="12"  y1="210" x2="24"  y2="210"/>
+      <line x1="396" y1="210" x2="408" y2="210"/>
+    </g>
+  </svg>
+</div>
+
+<!-- Main layout -->
+<div class="layout">
+
+  <header>
+    <div class="logo-wrap">
+      <div class="logo">
+        <svg viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="22" cy="22" r="17" stroke="#4A7CC7" stroke-width="1" opacity="0.5"/>
+          <circle cx="22" cy="22" r="9"  stroke="#4A7CC7" stroke-width="1" opacity="0.65"/>
+          <circle cx="22" cy="22" r="2.8" fill="#4A7CC7" opacity="0.9"/>
+          <line x1="22" y1="5"  x2="22" y2="13" stroke="#4A7CC7" stroke-width="1"/>
+          <line x1="22" y1="31" x2="22" y2="39" stroke="#4A7CC7" stroke-width="1"/>
+          <line x1="5"  y1="22" x2="13" y2="22" stroke="#4A7CC7" stroke-width="1"/>
+          <line x1="31" y1="22" x2="39" y2="22" stroke="#4A7CC7" stroke-width="1"/>
+          <line x1="9"  y1="9"  x2="15" y2="15" stroke="#4A7CC7" stroke-width="0.7" opacity="0.55"/>
+          <line x1="29" y1="29" x2="35" y2="35" stroke="#4A7CC7" stroke-width="0.7" opacity="0.55"/>
+          <line x1="35" y1="9"  x2="29" y2="15" stroke="#4A7CC7" stroke-width="0.7" opacity="0.55"/>
+          <line x1="15" y1="29" x2="9"  y2="35" stroke="#4A7CC7" stroke-width="0.7" opacity="0.55"/>
+        </svg>
+      </div>
+    </div>
+    <div class="header-text">
+      <h1>AI-QTIL</h1>
+      <p>Қазақ тілінде сөйлесейік</p>
+    </div>
+    <div class="header-badge">
+      <div class="status-dot"></div>
+      <span>Онлайн</span>
+    </div>
+  </header>
+
+  <div class="chat" id="chat">
+    <div class="welcome" id="welcome">
+      <div class="welcome-emblem">
+        <div class="w-ring"></div>
+        <div class="w-ring"></div>
+        <div class="w-ring"></div>
+        <div class="w-inner">
+          <svg viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="22" cy="22" r="17" stroke="#4A7CC7" stroke-width="0.9" opacity="0.5"/>
+            <circle cx="22" cy="22" r="9"  stroke="#4A7CC7" stroke-width="0.9" opacity="0.65"/>
+            <circle cx="22" cy="22" r="3"  fill="#4A7CC7" opacity="0.9"/>
+            <line x1="22" y1="5"  x2="22" y2="13" stroke="#4A7CC7" stroke-width="0.9"/>
+            <line x1="22" y1="31" x2="22" y2="39" stroke="#4A7CC7" stroke-width="0.9"/>
+            <line x1="5"  y1="22" x2="13" y2="22" stroke="#4A7CC7" stroke-width="0.9"/>
+            <line x1="31" y1="22" x2="39" y2="22" stroke="#4A7CC7" stroke-width="0.9"/>
+            <line x1="9"  y1="9"  x2="15" y2="15" stroke="#4A7CC7" stroke-width="0.6" opacity="0.55"/>
+            <line x1="29" y1="29" x2="35" y2="35" stroke="#4A7CC7" stroke-width="0.6" opacity="0.55"/>
+            <line x1="35" y1="9"  x2="29" y2="15" stroke="#4A7CC7" stroke-width="0.6" opacity="0.55"/>
+            <line x1="15" y1="29" x2="9"  y2="35" stroke="#4A7CC7" stroke-width="0.6" opacity="0.55"/>
+          </svg>
+        </div>
+      </div>
+      <h2>Сәлеметсіз бе</h2>
+      <p class="welcome-sub">
+        Мен сізге қазақ тілінде жауап беремін.<br>
+        Кез-келген сұрақпен жүгіне беріңіз.
+      </p>
+      <div class="welcome-sep"><span>немесе бастаңыз</span></div>
+    </div>
+  </div>
+
+  <div class="chips" id="chips">
+    <button class="chip" onclick="quick(this)">Қазақстан тарихы</button>
+    <button class="chip" onclick="quick(this)">Ғылыми жоба кеңесі</button>
+    <button class="chip" onclick="quick(this)">Ұлттық тағамдар</button>
+    <button class="chip" onclick="quick(this)">ЖИ дегеніміз не?</button>
+    <button class="chip" onclick="quick(this)">Математика есебі</button>
+  </div>
+
+  <div class="input-zone">
+    <div class="input-wrap">
+      <textarea id="inp" rows="1" placeholder="Сұрағыңызды жазыңыз..."></textarea>
+      <button id="send" onclick="go()" title="Жіберу">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+        </svg>
+      </button>
+    </div>
+    <p class="hint"><b>Enter</b> — жіберу &nbsp;·&nbsp; <b>Shift+Enter</b> — жол аудару</p>
+    <p class="hint"><b>Kuanysheva Aigerim Muratkyzy</b></p>
+  </div>
+
+  <button class="scroll-btn" id="scrollBtn" onclick="scrollToBottom()" title="Төменге">
+    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+      <path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/>
+    </svg>
+  </button>
+
+</div>
+
+<script>
+const API = "/api/chat";
+const SYS = `Сен — "Жасанды Ақыл" деп аталатын қазақша сөйлейтін жасанды интеллектсің.
+
+Міндетті ережелер:
+1. Барлық жауаптарды тек қазақ тілінде жаз. Орысша немесе ағылшынша сөз қолданба.
+2. Табиғи, сыпайы, жылы қазақша сөйле. Пайдаланушыны "Сіз" деп жіктеп сөйле.
+3. Сұрақтарға толық, нақты, пайдалы жауап бер.
+4. Қазақ мәдениеті, тарихы, дәстүрлері туралы мақтанышпен айт.
+5. Қажет болса тізімдер мен тақырыпшалар қолдан.
+
+Ешқашан қазақ тілінен басқа тілде жазба.`;
+
+let hist = [], busy = false;
+const chat      = document.getElementById('chat');
+const inp       = document.getElementById('inp');
+const btn       = document.getElementById('send');
+const scrollBtn = document.getElementById('scrollBtn');
+
+inp.addEventListener('input', () => {
+  inp.style.height = 'auto';
+  inp.style.height = Math.min(inp.scrollHeight, 120) + 'px';
+});
+inp.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); go(); }
+});
+chat.addEventListener('scroll', () => {
+  const nearBottom = chat.scrollHeight - chat.scrollTop - chat.clientHeight < 80;
+  scrollBtn.classList.toggle('visible', !nearBottom && chat.scrollHeight > chat.clientHeight + 100);
+});
+function scrollToBottom() { chat.scrollTo({ top: chat.scrollHeight, behavior: 'smooth' }); }
+function quick(el) {
+  inp.value = el.textContent;
+  document.getElementById('chips').style.display = 'none';
+  go();
+}
+
+function md(t) {
+  let s = t
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/```([\s\S]*?)```/g, (_,c) => `<pre><code>${c.trim()}</code></pre>`)
+    .replace(/`([^`]+)`/g,'<code>$1</code>')
+    .replace(/^### (.+)$/gm,'<h3>$1</h3>')
+    .replace(/^## (.+)$/gm,'<h2>$1</h2>')
+    .replace(/^# (.+)$/gm,'<h1>$1</h1>')
+    .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
+    .replace(/\*(.+?)\*/g,'<em>$1</em>')
+    .replace(/^> (.+)$/gm,'<blockquote>$1</blockquote>')
+    .replace(/^---$/gm,'<hr>')
+    .replace(/^[ \t]*[-*] (.+)$/gm,'<li>$1</li>')
+    .replace(/^[ \t]*\d+\. (.+)$/gm,'<li>$1</li>')
+    .replace(/(<li>[\s\S]+?<\/li>)/g, m => {
+      const items = m.match(/<li>[\s\S]*?<\/li>/g)||[];
+      return '<ul>'+items.join('')+'</ul>';
+    })
+    .replace(/\n{2,}/g,'</p><p>')
+    .replace(/\n/g,'<br>');
+  return '<p>'+s+'</p>';
+}
+
+function addMsg(role, text) {
+  const welcome = document.getElementById('welcome');
+  if (welcome) welcome.remove();
+
+  const row = document.createElement('div');
+  row.className = 'msg ' + role;
+
+  const avatar = document.createElement('div');
+  avatar.className = 'avatar ' + role;
+  if (role === 'ai') {
+    avatar.innerHTML = `<svg width="16" height="16" viewBox="0 0 44 44" fill="none">
+      <circle cx="22" cy="22" r="17" stroke="#4A7CC7" stroke-width="1" opacity="0.6"/>
+      <circle cx="22" cy="22" r="2.5" fill="#4A7CC7" opacity="0.9"/>
+      <line x1="22" y1="5"  x2="22" y2="13" stroke="#4A7CC7" stroke-width="1"/>
+      <line x1="22" y1="31" x2="22" y2="39" stroke="#4A7CC7" stroke-width="1"/>
+      <line x1="5"  y1="22" x2="13" y2="22" stroke="#4A7CC7" stroke-width="1"/>
+      <line x1="31" y1="22" x2="39" y2="22" stroke="#4A7CC7" stroke-width="1"/>
+    </svg>`;
+  } else {
+    avatar.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none">
+      <circle cx="12" cy="8" r="4" stroke="#7AAAE0" stroke-width="1.3"/>
+      <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" stroke="#7AAAE0" stroke-width="1.3" stroke-linecap="round"/>
+    </svg>`;
+  }
+
+  const bub = document.createElement('div');
+  bub.className = 'bubble ' + role;
+
+  if (text === '__typing__') {
+    bub.innerHTML = `<div class="typing-wrap">
+      <div class="typing"><span></span><span></span><span></span></div>
+      <span class="typing-label">жазуда...</span>
+    </div>`;
+    row.id = 'typing-row';
+  } else if (role === 'ai') {
+    bub.innerHTML = md(text);
+  } else {
+    bub.textContent = text;
+  }
+
+  row.appendChild(avatar);
+  row.appendChild(bub);
+  chat.appendChild(row);
+  chat.scrollTo({ top: chat.scrollHeight, behavior: 'smooth' });
+  return row;
+}
+
+async function go() {
+  const text = inp.value.trim();
+  if (!text || busy) return;
+  busy = true; btn.disabled = true;
+  inp.value = ''; inp.style.height = 'auto';
+  document.getElementById('chips').style.display = 'none';
+
+  addMsg('user', text);
+  hist.push({ role:'user', content:text });
+  const loader = addMsg('ai','__typing__');
+
+  try {
+    const res  = await fetch(API, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ system:SYS, messages:hist })
+    });
+    const data = await res.json();
+    loader.remove();
+    if (data.error) {
+      addMsg('ai','⚠ ' + JSON.stringify(data.error));
+    } else {
+      const reply = (data.content||[]).map(b=>b.text||'').join('') || 'Жауап алынбады.';
+      addMsg('ai', reply);
+      hist.push({ role:'assistant', content:reply });
+    }
+  } catch(e) {
+    loader.remove();
+    addMsg('ai','⚠ Қосылым қатесі. Кейінірек қайталап көріңіз.');
+  }
+  busy = false; btn.disabled = false; inp.focus();
+}
+</script>
+</body>
+</html>
